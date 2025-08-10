@@ -8,14 +8,19 @@
 # Install dependencies
 pip install -r requirements.txt
 
-# Validate a standard GAP shard
-python tools/validate.py /path/to/gap_shard/session_id/
+# Download and validate the 100MB reference sample
+cd samples/star-atlas_100mb/
+./download.sh
+cd ../..
 
-# Validate with a specific profile (e.g., Wayfarer-OWL)
-python tools/validate.py --profile wayfarer-owl /path/to/shard/
+# Validate with advisory mode (default)
+python3 tools/validate.py --profile wayfarer-owl samples/star-atlas_100mb/
 
-# Load sample data
-python examples/load_sample.py
+# Validate with strict mode (enforces recommended bitrates)
+python3 tools/validate.py --profile wayfarer-owl --strict samples/star-atlas_100mb/
+
+# Load and explore sample data
+python3 examples/load_sample.py
 ```
 
 ## Repository Structure
@@ -118,6 +123,15 @@ python tools/validate.py --json --profile wayfarer-owl samples/star-atlas_100mb/
 - Video (4K @ 50 Mbps): ~22.5 GB/hour
 - Enhanced features: ~2-6 GB/hour additional
 - Research-grade fidelity with backward compatibility
+
+## Versioning
+
+| Version | Status | Support | Notes |
+|---------|--------|---------|-------|
+| **v0.2.x** | Current | Active | Production ready, partner profiles |
+| v0.1.x | Deprecated | Legacy | Raw frames, variable rates (migrate to v0.2) |
+
+Migration from v0.1.x: Use AV1/HEVC CFR, standardize control rates to ≥60Hz.
 
 ## Contributing
 

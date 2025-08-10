@@ -17,6 +17,11 @@
 **Shard duration:** 30–120 minutes continuous gameplay (no menus/cutscenes).
 **Timebase:** All timestamps are **monotonic microseconds** (`ts_us`, int64) from the same host clock used to capture video and inputs.
 
+**Timing Alignment:**
+- `clock_domain = monotonic_us` (host monotonic clock)
+- `video_pts_us = container_pts × timebase` (video presentation timestamps)
+- `|frame_pts_us − nearest_control_ts_us| ≤ 8 ms` for ≥95% of pairs (measured in QAT)
+
 ---
 
 ## 2) `meta.json` (required)
@@ -92,6 +97,21 @@ bit10: Shift(sprint)  bit11–15: reserved
 > If a title needs more granularity, add columns under a `custom_*` prefix—GAP readers must ignore unknown fields.
 
 **Controls size @ 60–120 Hz:** **\~3–15 MB/hour**, depending on columns present.
+
+### Optional: Per-Frame Controls Snapshot
+
+For downstream convenience, an **optional** `frame_controls.parquet` may be provided containing one row per video frame:
+
+| column | type | notes |
+|--------|------|-------|
+| `frame_index` | int64 | 0-based frame number |
+| `ts_us` | int64 | frame presentation timestamp |
+| `keymask` | uint16 | active keys at frame time |
+| `mouse_dx` | int16 | mouse delta since last frame |
+| `mouse_dy` | int16 | mouse delta since last frame |
+| `pad_axes` | struct | `{lx:int8, ly:int8, rx:int8, ry:int8, lt:uint8, rt:uint8}` |
+
+This derived format enables training without event integration. The **event log remains the source of truth**.
 
 ---
 

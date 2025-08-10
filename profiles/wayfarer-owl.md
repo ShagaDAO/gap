@@ -10,7 +10,7 @@ This profile mirrors OWL's public defaults so shards ingest with zero surprises.
   Container/codec: use what Owl Control/OBS emits; CFR is non-negotiable.
 * **Bitrate:** OWL captures ≈ 25 Mbps; if you must compress, keep it visually lossless.
 * **Controls:** raw keyboard/mouse (mouse-delta for FPS), timestamped with **monotonic µs**.
-* **Audio:** not required; Owl Control records video+inputs (no audio). If you capture game audio, store as sidecar.
+* **Audio:** not required; Owl Control records **video + raw inputs** (no audio). If audio is captured, store as a **sidecar**; ingestion will ignore it.
 * **Segments:** split into 10–60 s chunks (I/O friendliness).
 
 ## Processing Targets (handled by OWL—contributors don't do this)

@@ -2,7 +2,7 @@
 
 **Wayfarer Labs OWL Profile Reference Implementation**
 
-This directory contains a reference implementation of the GAP v0.2 specification using the Wayfarer-OWL profile format. This sample demonstrates the exact structure expected for production shards.
+This is a **Wayfarer-compatible reference shard** for validator/loader testing. It is **vendor-neutral** and not affiliated with any storage provider. This sample demonstrates the exact structure expected for production shards.
 
 ## Contents
 
