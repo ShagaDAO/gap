@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gap-agent"
+description = "Open GAP shard packaging, encryption, and upload library"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "GAP Contributors", email = "gap@shaga.ai"}
+]
+keywords = ["gaming", "gameplay", "data", "ml", "video", "controls"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Games/Entertainment",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Video",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0.0",
+    "pathlib",
+    "typing-extensions>=4.0.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+crypto = [
+    "cryptography>=40.0.0",
+    "pynacl>=1.5.0",
+]
+upload = [
+    "boto3>=1.26.0",
+    "botocore>=1.29.0",
+]
+all = [
+    "gap-agent[crypto,upload]",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ShagaDAO/gap"
+Documentation = "https://github.com/ShagaDAO/gap/tree/main/gap-agent"
+Repository = "https://github.com/ShagaDAO/gap.git"
+Issues = "https://github.com/ShagaDAO/gap/issues"
+
+[project.scripts]
+gap = "gap_agent.cli:gap"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+write_to = "src/gap_agent/_version.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+strict = true
+ignore_missing_imports = true 

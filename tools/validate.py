@@ -15,6 +15,11 @@ from typing import Dict, List, Any, Tuple, Optional
 import click
 
 from loader import GAPLoader
+try:
+    from uri_loader import URILoader, is_uri
+except ImportError:
+    URILoader = None
+    is_uri = lambda x: False
 
 
 class GAPValidator:
@@ -342,6 +347,19 @@ class GAPValidator:
 @click.option('--quiet', '-q', is_flag=True, help='Only show errors and warnings')
 def main(shard_path: str, profile: Optional[str], strict: bool, output_json: bool, quiet: bool):
     """Validate a GAP v0.2 shard against specification requirements."""
+    
+    # Handle URI schemes (hf://, s3://, etc.)
+    original_path = shard_path
+    if URILoader and is_uri(shard_path):
+        if not quiet:
+            print(f"Loading from URI: {shard_path}")
+        try:
+            shard_path = URILoader.load_from_uri(shard_path)
+            if not quiet:
+                print(f"Downloaded to: {shard_path}")
+        except Exception as e:
+            print(f"❌ Failed to load from URI: {e}", err=True)
+            raise click.Abort()
     
     validator = GAPValidator(shard_path, profile, strict)
     is_valid, report = validator.validate_all()

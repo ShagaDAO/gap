@@ -33,18 +33,30 @@ gap/
 ├── profiles/                # Partner-specific profiles
 │   ├── wayfarer-owl.md     # OWL baseline profile (1080p60)
 │   └── wayfarer-owl-hqplus.md # OWL HQ+ profile (enhanced)
+├── gap-agent/              # Open storage/upload module
+│   ├── src/gap_agent/      # Public GAP packaging library
+│   ├── pyproject.toml      # Package configuration
+│   └── README.md           # Gap-agent documentation
 ├── samples/                 # Sample data and examples
 │   ├── meta.json           # Basic GAP sample metadata
 │   ├── controls.jsonl      # Basic controls (5 rows)
 │   ├── frames.csv          # Basic frame index
 │   └── star-atlas_100mb/   # 100MB OWL profile sample
 ├── tools/                  # Utilities and validators
-│   ├── validate.py         # GAP shard validator
-│   └── loader.py           # Python data loader
+│   ├── validate.py         # GAP shard validator (supports hf://, s3://)
+│   ├── loader.py           # Python data loader
+│   └── generate_synth_shard.py # Rights-free synthetic data
+├── huggingface/            # HF distribution
+│   ├── dataset/            # Dataset card + script
+│   └── space/              # Interactive validator Space
+├── docs/                   # Documentation
+│   └── data-card.md        # Dataset documentation
 ├── examples/               # Example usage
 │   └── load_sample.py      # How to load GAP data
-├── CHANGELOG.md            # Version history
-└── requirements.txt        # Python dependencies
+├── .github/workflows/      # CI/CD
+│   ├── validate.yml        # Validation CI
+│   └── publish-hf.yml      # HF publishing workflow
+└── CHANGELOG.md            # Version history
 ```
 
 ## What is GAP?
