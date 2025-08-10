@@ -16,11 +16,11 @@
 | Controls | ~245 KB | JSONL | 120Hz keyboard/mouse events |
 | Metadata | ~3.5 KB | JSON | Session and quality information |
 
-**Source Breakdown (Measured):**
-- Gameplay duration: 180 seconds (measured)
-- Frame count: 10,800 frames @ 60fps (derived)
-- Control events: ~21,600 samples @ 120Hz (measured)
-- Compression ratio: ~99.2% vs raw (modeled)
+**Source Breakdown:**
+- Gameplay duration: 180 seconds **(measured)**
+- Frame count: 10,800 frames @ 60fps **(derived)**
+- Control events: ~21,600 samples @ 120Hz **(measured)**
+- Compression ratio: ~99.2% vs raw **(modeled)**
 
 ## Capture Toolchain
 
@@ -34,10 +34,10 @@
 - Bitrate: 4.5 Mbps (measured)
 - Timing: Monotonic microsecond clock (measured)
 
-**Quality Gates (Measured):**
-- CFR integrity: >99.5% (derived)
-- Sync accuracy: ±8ms for 95% of pairs (modeled)
-- Timestamp drift: <1ms/minute (measured)
+**Quality Gates:**
+- CFR integrity: >99.5% **(derived)**
+- Sync accuracy: ±8ms for 95% of pairs **(modeled)**
+- Timestamp drift: <1ms/minute **(measured)**
 
 ## Privacy & Consent
 
@@ -61,7 +61,7 @@
 
 ## Quality Assurance
 
-**Validation Rules (All Measured):**
+**Validation Rules:**
 - ✅ Monotonic timestamps
 - ✅ CFR video stream
 - ✅ Event-frame temporal alignment

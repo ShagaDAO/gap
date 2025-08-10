@@ -1,32 +1,36 @@
-# GAP v0.2 — Gameplay-Action Pairs
+# GAP: Gameplay–Action Pairs (Preview)
 
-**A standard way to package time-aligned frames + controls (+ optional labels) so partners can train world-models and neural codecs with minimal glue code.**
+**Open standard + tools for time‑aligned frames + controls.**  
+This repo contains the GAP spec, validator, and the `gap‑agent` packing/upload CLI.
+It's the public, auditable **data path** that sits next to the closed Shaga Node Core.
+
+> **Status: Preview**. APIs may change. Data uploads are **invite‑only** while we harden anti‑Sybil gates.
+
+- 📄 **Spec & Schemas:** `packages/gap-spec/`
+- 🧰 **CLI:** `packages/gap-agent/` (`gap pack|upload|verify|validate`)
+- 🔎 **Validator:** `tools/validate.py` (+ drag‑and‑drop Space on Hugging Face)
+- 🧪 **Sample:** 100 MB rights‑clean shard (download via `samples/.../download.sh`)
+
+**What's open:** spec, validator, packing/upload client, sample & Space.  
+**What's closed:** real‑time streaming, DRM, watermarking, Proof‑of‑Render.
 
 ## Quick Start
 
 ```bash
-# Install GAP agent (packaging + upload)
-pip install ./packages/gap-agent
-
-# Install validation dependencies  
-pip install -r requirements.txt
-
-# Download and validate the 100MB reference sample
+# Download and validate the reference sample
 cd samples/star-atlas_100mb/
 ./download.sh
 cd ../..
-
-# Validate with advisory mode (default)
 python3 tools/validate.py --profile wayfarer-owl samples/star-atlas_100mb/
 
-# Run local ingest checks (QAT + anti-sybil)
-python3 tools/ingest_check.py samples/star-atlas_100mb/ --profile wayfarer-owl --verbose
+# Install GAP agent for packaging
+pip install ./packages/gap-agent
 
 # Package your own GAP shard
-gap pack video.mkv controls.jsonl --profile wayfarer-owl --output my_shard/ --encrypt
+gap pack video.mkv controls.jsonl --profile wayfarer-owl --encrypt
 
-# Validate from HF dataset
-python3 tools/validate.py hf://Shaga/GAP-samples/star-atlas --profile wayfarer-owl
+# Upload (allowlisted nodes only)
+gap upload my_shard/ --endpoint s3://... --idle-policy smart
 ```
 
 ## Repository Structure
@@ -163,14 +167,26 @@ python tools/validate.py --json --profile wayfarer-owl samples/star-atlas_100mb/
 
 Migration from v0.1.x: Use AV1/HEVC CFR, standardize control rates to ≥60Hz.
 
+## Known Limitations (Preview Status)
+
+- **APIs may change** between preview versions
+- **Bitrate checks** are advisory unless `--strict` flag is used
+- **Upload requires allowlist** credentials (invite-only)
+- **Validator outputs** may change format in future versions
+- **Anti-sybil detection** is in early testing phase
+
 ## Contributing
 
-GAP v0.2 is designed for immediate production use. For profile additions or specification changes, please:
+**Spec/Code contributions:** Standard GitHub issues + PRs welcome
+**Data contributions:** [Apply for allowlist access](CONTRIBUTORS.md#allowlist-application)
 
+For specification changes:
 1. Review existing profiles for compatibility patterns
-2. Ensure backward compatibility with core GAP v0.2
+2. Ensure backward compatibility with core GAP spec
 3. Include validation rules and sample data
-4. Test with the provided validator tools
+4. Test with provided validator tools
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for detailed guidelines.
 
 ## License
 
