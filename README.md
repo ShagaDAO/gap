@@ -5,7 +5,10 @@
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Install GAP agent (packaging + upload)
+pip install ./packages/gap-agent
+
+# Install validation dependencies  
 pip install -r requirements.txt
 
 # Download and validate the 100MB reference sample
@@ -16,41 +19,56 @@ cd ../..
 # Validate with advisory mode (default)
 python3 tools/validate.py --profile wayfarer-owl samples/star-atlas_100mb/
 
-# Validate with strict mode (enforces recommended bitrates)
-python3 tools/validate.py --profile wayfarer-owl --strict samples/star-atlas_100mb/
+# Run local ingest checks (QAT + anti-sybil)
+python3 tools/ingest_check.py samples/star-atlas_100mb/ --profile wayfarer-owl --verbose
 
-# Load and explore sample data
-python3 examples/load_sample.py
+# Package your own GAP shard
+gap pack video.mkv controls.jsonl --profile wayfarer-owl --output my_shard/ --encrypt
+
+# Validate from HF dataset
+python3 tools/validate.py hf://Shaga/GAP-samples/star-atlas --profile wayfarer-owl
 ```
 
 ## Repository Structure
 
 ```
 gap/
-├── spec/                    # Core specification
-│   ├── GAP-v0.2.md         # Full GAP v0.2 specification
-│   └── schema.json         # JSON schema for validation
-├── profiles/                # Partner-specific profiles
-│   ├── wayfarer-owl.md     # OWL baseline profile (1080p60)
-│   └── wayfarer-owl-hqplus.md # OWL HQ+ profile (enhanced)
-├── gap-agent/              # Open storage/upload module
-│   ├── src/gap_agent/      # Public GAP packaging library
-│   ├── pyproject.toml      # Package configuration
-│   └── README.md           # Gap-agent documentation
-├── samples/                 # Sample data and examples
+├── packages/               # Modular packages
+│   ├── gap-spec/           # Core specifications and schemas
+│   │   ├── GAP-v0.2.md     # Full GAP v0.2 specification
+│   │   ├── schema.json     # JSON schema for meta.json
+│   │   ├── manifest.schema.json # Schema for manifests
+│   │   ├── receipt.schema.json  # Schema for ingest receipts
+│   │   └── profiles/       # Partner-specific profiles
+│   │       ├── wayfarer-owl.md # OWL baseline (1080p60)
+│   │       └── wayfarer-owl-hqplus.md # OWL HQ+ (enhanced)
+│   └── gap-agent/          # Open storage/upload module
+│       ├── src/gap_agent/  # Public GAP packaging library
+│       │   ├── packager.py # GAP shard creation + encryption
+│       │   ├── uploader.py # S3-compatible with throttling
+│       │   ├── verifier.py # Receipt validation + integrity
+│       │   ├── dedupe.py   # pHash/SimHash duplicate detection
+│       │   └── cli.py      # Command-line interface
+│       ├── pyproject.toml  # Package configuration
+│       └── README.md       # Gap-agent documentation
+├── tools/                  # Utilities and validators
+│   ├── validate.py         # GAP validator (supports hf://, s3://)
+│   ├── uri_loader.py       # Universal URI loading
+│   ├── ingest_check.py     # Local QAT + anti-sybil checks
+│   ├── loader.py           # Python data loader
+│   └── generate_synth_shard.py # Rights-free synthetic data
+├── docs/                   # Documentation
+│   ├── API.md              # Locked API contract for Node Core
+│   ├── ANTI_SYBIL.md       # Anti-sybil defense strategy
+│   └── data-card.md        # Dataset documentation
+├── samples/                # Sample data and examples
 │   ├── meta.json           # Basic GAP sample metadata
 │   ├── controls.jsonl      # Basic controls (5 rows)
 │   ├── frames.csv          # Basic frame index
 │   └── star-atlas_100mb/   # 100MB OWL profile sample
-├── tools/                  # Utilities and validators
-│   ├── validate.py         # GAP shard validator (supports hf://, s3://)
-│   ├── loader.py           # Python data loader
-│   └── generate_synth_shard.py # Rights-free synthetic data
 ├── huggingface/            # HF distribution
 │   ├── dataset/            # Dataset card + script
 │   └── space/              # Interactive validator Space
-├── docs/                   # Documentation
-│   └── data-card.md        # Dataset documentation
 ├── examples/               # Example usage
 │   └── load_sample.py      # How to load GAP data
 ├── .github/workflows/      # CI/CD

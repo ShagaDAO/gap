@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ShagaDAO/gap/schemas/manifest.v1.json",
+  "title": "GAP Manifest Schema",
+  "description": "Schema for GAP v0.2 manifest files containing session metadata and file information",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "segment_index",
+    "files",
+    "qat_results",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^gap\\.manifest\\.v1$",
+      "description": "Schema version identifier"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique session identifier"
+    },
+    "segment_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sequential segment number within session"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "Node identifier that created this segment"
+    },
+    "files": {
+      "type": "object",
+      "required": ["video", "controls", "metadata"],
+      "properties": {
+        "video": {
+          "$ref": "#/$defs/file_info"
+        },
+        "controls": {
+          "$ref": "#/$defs/file_info"
+        },
+        "metadata": {
+          "$ref": "#/$defs/file_info"
+        },
+        "netstats": {
+          "$ref": "#/$defs/file_info"
+        },
+        "labels": {
+          "$ref": "#/$defs/file_info"
+        }
+      }
+    },
+    "qat_results": {
+      "type": "object",
+      "required": [
+        "timestamp_sanity",
+        "cfr_integrity",
+        "sync_within_8ms_pct",
+        "drops_pct",
+        "coverage_pct"
+      ],
+      "properties": {
+        "timestamp_sanity": {
+          "type": "boolean",
+          "description": "All timestamps are monotonic and within reasonable bounds"
+        },
+        "cfr_integrity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of frames maintaining constant frame rate"
+        },
+        "sync_within_8ms_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of frame-control pairs within 8ms alignment"
+        },
+        "drops_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of dropped or duplicate frames"
+        },
+        "coverage_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of frames with corresponding control events"
+        },
+        "timestamp_drift_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum timestamp drift in milliseconds"
+        }
+      }
+    },
+    "dedup_score": {
+      "type": "object",
+      "required": ["phash_hamming_distance", "simhash_hamming_distance", "risk_level"],
+      "properties": {
+        "phash_hamming_distance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128,
+          "description": "Minimum Hamming distance to known content (perceptual hash)"
+        },
+        "simhash_hamming_distance": {
+          "type": "integer", 
+          "minimum": 0,
+          "maximum": 128,
+          "description": "Minimum Hamming distance to known controls (simhash)"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Overall duplication risk assessment"
+        },
+        "similar_sessions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Session IDs with similar content"
+        }
+      }
+    },
+    "coherence_score": {
+      "type": "object",
+      "properties": {
+        "motion_correlation": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Correlation between mouse movement and optical flow"
+        },
+        "keyboard_entropy": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Shannon entropy of keyboard input patterns"
+        },
+        "suspicion_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Overall coherence suspicion level"
+        }
+      }
+    },
+    "encryption": {
+      "type": "object",
+      "required": ["enabled", "algorithm"],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether segment is encrypted"
+        },
+        "algorithm": {
+          "type": "string",
+          "enum": ["X25519-AES256-GCM", "none"],
+          "description": "Encryption algorithm used"
+        },
+        "key_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 fingerprint of encryption key"
+        },
+        "envelope_key": {
+          "type": "string",
+          "description": "Base64-encoded envelope key for decryption"
+        }
+      }
+    },
+    "profile": {
+      "type": "string",
+      "description": "GAP profile used (wayfarer-owl, standard, etc.)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Manifest creation timestamp (ISO 8601)"
+    },
+    "created_by": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "type": "string",
+          "description": "Tool name and version (gap-agent v0.3.0)"
+        },
+        "node_version": {
+          "type": "string",
+          "description": "Node software version"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "file_info": {
+      "type": "object",
+      "required": ["path", "size_bytes", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path to file within segment"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of file contents"
+        },
+        "format": {
+          "type": "string",
+          "description": "File format (AV1, HEVC, JSONL, Parquet)"
+        },
+        "compressed": {
+          "type": "boolean",
+          "description": "Whether file is compressed"
+        }
+      }
+    }
+  }
+} 

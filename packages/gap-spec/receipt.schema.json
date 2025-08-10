@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ShagaDAO/gap/schemas/receipt.v1.json",
+  "title": "GAP Ingest Receipt Schema",
+  "description": "Schema for server-issued receipts confirming GAP segment ingestion and validation",
+  "type": "object",
+  "required": [
+    "schema",
+    "session_id",
+    "segment_index",
+    "object_uri",
+    "sha256_plaintext",
+    "sha256_ciphertext",
+    "duration_s",
+    "frames",
+    "qat",
+    "dup_score",
+    "ingested_at",
+    "ingest_sig"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "pattern": "^gap\\.receipt\\.v1$",
+      "description": "Receipt schema version"
+    },
+    "receipt_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique receipt identifier"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "GAP session identifier"
+    },
+    "segment_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Segment number within session"
+    },
+    "node_id": {
+      "type": "string",
+      "description": "Uploader node identifier"
+    },
+    "object_uri": {
+      "type": "string",
+      "format": "uri",
+      "description": "Full URI to stored object"
+    },
+    "sha256_plaintext": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of unencrypted segment"
+    },
+    "sha256_ciphertext": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of encrypted segment as stored"
+    },
+    "duration_s": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Segment duration in seconds"
+    },
+    "frames": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total frame count"
+    },
+    "wm_detect_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Watermark detection rate (0.0-1.0)"
+    },
+    "qat": {
+      "$ref": "#/$defs/qat_results"
+    },
+    "dup_score": {
+      "$ref": "#/$defs/dedup_score"
+    },
+    "coherence": {
+      "$ref": "#/$defs/coherence_score"
+    },
+    "verification": {
+      "type": "object",
+      "properties": {
+        "watermark_verified": {
+          "type": "boolean",
+          "description": "Challenge watermark successfully verified"
+        },
+        "title_server_verified": {
+          "type": "boolean",
+          "description": "Session verified against title server"
+        },
+        "risk_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall risk score (0=safe, 100=high risk)"
+        },
+        "action_taken": {
+          "type": "string",
+          "enum": ["accept", "flag", "reject"],
+          "description": "Action taken based on verification"
+        }
+      }
+    },
+    "por_root": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Proof of Retrieval Merkle root (optional)"
+    },
+    "reward_info": {
+      "type": "object",
+      "properties": {
+        "credits_earned": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Credits earned for this segment"
+        },
+        "quality_multiplier": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Quality-based reward multiplier"
+        },
+        "bonus_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Reasons for any bonus rewards"
+        }
+      }
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Ingestion completion timestamp (ISO 8601)"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Receipt expiration timestamp (ISO 8601)"
+    },
+    "ingest_sig": {
+      "type": "string",
+      "pattern": "^ed25519:[a-f0-9]{128}$",
+      "description": "Ed25519 signature of receipt by ingest service"
+    },
+    "chain_tx": {
+      "type": "string",
+      "description": "Blockchain transaction ID (if applicable)"
+    }
+  },
+  "$defs": {
+    "qat_results": {
+      "type": "object",
+      "required": [
+        "timestamp_sanity",
+        "cfr_integrity",
+        "sync_within_8ms_pct",
+        "drops_pct",
+        "coverage_pct"
+      ],
+      "properties": {
+        "timestamp_sanity": {
+          "type": "boolean",
+          "description": "Timestamps are monotonic and reasonable"
+        },
+        "cfr_integrity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Constant frame rate integrity percentage"
+        },
+        "sync_within_8ms_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Frame-control sync within 8ms percentage"
+        },
+        "drops_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Dropped/duplicate frame percentage"
+        },
+        "coverage_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Frame coverage percentage"
+        },
+        "timestamp_drift_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum timestamp drift in milliseconds"
+        },
+        "passes_qat": {
+          "type": "boolean",
+          "description": "Overall QAT pass/fail status"
+        }
+      }
+    },
+    "dedup_score": {
+      "type": "object",
+      "required": ["phash_hamming_distance", "simhash_hamming_distance", "risk_level"],
+      "properties": {
+        "phash_hamming_distance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128,
+          "description": "Min Hamming distance to known content"
+        },
+        "simhash_hamming_distance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128,
+          "description": "Min Hamming distance to known controls"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Duplication risk level"
+        },
+        "similar_sessions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "UUIDs of similar sessions found"
+        },
+        "bloom_filter_hits": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of bloom filter hits"
+        }
+      }
+    },
+    "coherence_score": {
+      "type": "object",
+      "properties": {
+        "motion_correlation": {
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1,
+          "description": "Mouse-motion correlation coefficient"
+        },
+        "keyboard_entropy": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Keyboard input entropy score"
+        },
+        "suspicion_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Overall coherence suspicion level"
+        },
+        "temporal_consistency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Temporal consistency score"
+        }
+      }
+    }
+  }
+} 
