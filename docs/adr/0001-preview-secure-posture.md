@@ -2,7 +2,7 @@
 
 - **Date**: 2025-02-05
 - **Status**: Accepted
-- **Deciders**: @guidopardi
+- **Deciders**: @chat-grp
 - **Technical Story**: GAP needs public audit-friendly spec and validator without misleading users about crypto/upload capabilities
 
 ## Context
