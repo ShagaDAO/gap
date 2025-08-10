@@ -28,14 +28,18 @@ This security policy covers:
 
 ### How to Report
 
-**Email:** security@shaga.ai  
-**Subject:** `[GAP Security] Brief Description`
+If you believe you've found a vulnerability, please use **GitHub Security Advisories** for this repository. We'll coordinate disclosure there.
 
-**Please include:**
-- Detailed description of the vulnerability
-- Steps to reproduce the issue
-- Potential impact assessment
-- Suggested mitigation (if any)
+**Please do not open public issues for security reports.**
+
+**To report via GitHub Security Advisories:**
+1. Go to the Security tab of this repository
+2. Click "Report a vulnerability"
+3. Fill out the advisory form with:
+   - Detailed description of the vulnerability
+   - Steps to reproduce the issue
+   - Potential impact assessment
+   - Suggested mitigation (if any)
 
 ### Response Timeline
 

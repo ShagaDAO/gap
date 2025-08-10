@@ -14,19 +14,12 @@ class Verifier:
                check_remote: bool = False, deep_verify: bool = False) -> Dict[str, Any]:
         """Verify GAP shard integrity and upload receipt."""
         
-        # TODO: Implement verification logic
-        # - Local file hash verification
-        # - Receipt signature validation
-        # - Remote storage verification if requested
-        # - Deep verification (re-download and compare)
-        
-        # Placeholder implementation
-        result = {
-            "valid": True,
-            "local_integrity": True,
-            "hash_verification": True,
-            "errors": []
-        }
+        # Preview build: verification is stubbed by design
+        # See STATUS.md for roadmap to production implementation
+        raise NotImplementedError(
+            "Preview build: verification is stubbed by design. "
+            "See STATUS.md for roadmap to production implementation."
+        )
         
         if check_remote:
             result["remote_verification"] = True

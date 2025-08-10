@@ -13,26 +13,26 @@ class EncryptionManager:
     
     def __init__(self):
         """Initialize encryption manager with key generation."""
-        # TODO: Generate X25519 key pair
-        # TODO: Initialize AES-GCM context
+        # Intentionally unimplemented in preview - see STATUS.md
         pass
         
     def encrypt_file(self, file_path: Path) -> Path:
         """Encrypt file in place using envelope encryption."""
-        
-        # TODO: Implement encryption
-        # - Generate per-file AES key
-        # - Encrypt file with AES-GCM
-        # - Encrypt AES key with X25519
-        # - Write encrypted file + envelope
-        
-        # Placeholder - just return original path
-        return file_path
+        raise NotImplementedError(
+            "Preview build: crypto is stubbed by design. "
+            "See STATUS.md for roadmap to production implementation."
+        )
         
     def get_key_fingerprint(self) -> str:
         """Get fingerprint of public key for verification."""
-        return "placeholder_fingerprint_12345"
+        raise NotImplementedError(
+            "Preview build: crypto is stubbed by design. "
+            "See STATUS.md for roadmap to production implementation."
+        )
         
     def get_envelope_key(self) -> str:
         """Get envelope key for recipient decryption."""
-        return "placeholder_envelope_key_67890" 
+        raise NotImplementedError(
+            "Preview build: crypto is stubbed by design. "
+            "See STATUS.md for roadmap to production implementation."
+        ) 

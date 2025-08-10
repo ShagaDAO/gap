@@ -24,14 +24,12 @@ class Uploader:
         
         start_time = time.time()
         
-        # TODO: Implement actual S3 upload logic
-        # - Check system idle state if idle_only=True
-        # - Multipart upload with throttling
-        # - Parallel chunk uploads
-        # - Retry logic with exponential backoff
-        # - Progress tracking
-        
-        # Placeholder implementation
+        # Preview build: upload is stubbed by design
+        # See STATUS.md for roadmap to production implementation
+        raise NotImplementedError(
+            "Preview build: S3 upload is stubbed by design. "
+            "See STATUS.md for roadmap to production implementation."
+        )
         receipt = {
             "receipt_id": f"upload_{int(time.time())}",
             "upload_duration_sec": time.time() - start_time,

@@ -37,7 +37,7 @@
 
 **To apply for data contribution allowlist:**
 
-📝 **[Apply Here: Allowlist Registration Form](https://forms.gle/example)**
+📝 **[Apply Here: GitHub Discussions](https://github.com/ShagaDAO/gap/discussions/new?category=allowlist-requests)**
 
 **Requirements:**
 - Valid contact information and verification
@@ -176,4 +176,4 @@ python3 tools/generate_synth_shard.py --duration 30 --output test_shard/
 
 **Questions?** Open an issue or join the discussion. We're here to help!
 
-**Ready to contribute data?** [Apply for allowlist access](https://forms.gle/example) 
+**Ready to contribute data?** [Apply for allowlist access](https://github.com/ShagaDAO/gap/discussions/new?category=allowlist-requests) 

@@ -1,15 +1,23 @@
 # GAP: Gameplay–Action Pairs (Preview)
 
-**Open standard + tools for time‑aligned frames + controls.**  
-This repo contains the GAP spec, validator, and the `gap‑agent` packing/upload CLI.
-It's the public, auditable **data path** that sits next to the closed Shaga Node Core.
+> ⚠️ **PREVIEW / SPEC‑FIRST RELEASE**  
+> This repo publishes the **GAP data specification** and a **reference validator**.  
+> The **gap‑agent** uploader is a **simulation‑only prototype** not suitable for production.
+> Crypto, upload, and verifier modules are **stubs** by design and will fail safely.
 
-> **Status: Preview**. APIs may change. Data uploads are **invite‑only** while we harden anti‑Sybil gates.
+![status](https://img.shields.io/badge/status-preview-yellow)
+![scope](https://img.shields.io/badge/scope-spec%20%2B%20validator-blue)
+![agent](https://img.shields.io/badge/agent-sim--only-orange)
+
+**Open standard + tools for time‑aligned frames + controls.**  
+This repo contains the GAP spec, validator, and simulation-only gap‑agent prototype.
 
 - 📄 **Spec & Schemas:** `packages/gap-spec/`
-- 🧰 **CLI:** `packages/gap-agent/` (`gap pack|upload|verify|validate`)
+- 🧰 **CLI:** `packages/gap-agent-sim/` (simulation only, requires `--sim-mode`)
 - 🔎 **Validator:** `tools/validate.py` (+ drag‑and‑drop Space on Hugging Face)
 - 🧪 **Sample:** 100 MB rights‑clean shard (download via `samples/.../download.sh`)
+
+📊 **[Current Status →](STATUS.md)** - What works vs. what's simulation-only
 
 **What's open:** spec, validator, packing/upload client, sample & Space.  
 **What's closed:** real‑time streaming, DRM, watermarking, Proof‑of‑Render.
@@ -23,14 +31,14 @@ cd samples/star-atlas_100mb/
 cd ../..
 python3 tools/validate.py --profile wayfarer-owl samples/star-atlas_100mb/
 
-# Install GAP agent for packaging
-pip install ./packages/gap-agent
+# Install GAP agent simulation (preview only)
+pip install ./packages/gap-agent-sim
 
-# Package your own GAP shard
-gap pack video.mkv controls.jsonl --profile wayfarer-owl --encrypt
+# Try the simulation (requires --sim-mode acknowledgment)
+gap --sim-mode pack video.mkv controls.jsonl --profile wayfarer-owl --encrypt
 
-# Upload (allowlisted nodes only)
-gap upload my_shard/ --endpoint s3://... --idle-policy smart
+# Validation works fully (not simulation)
+python3 tools/validate.py samples/star-atlas_100mb/ --profile wayfarer-owl
 ```
 
 ## Repository Structure

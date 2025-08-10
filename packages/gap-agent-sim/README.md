@@ -1,8 +1,10 @@
-# GAP Agent - Open Storage & Upload Module
+# GAP Agent (Simulation Preview)
 
-**Public, auditable GAP shard packaging, encryption, and upload library.**
+> **SIMULATION‑ONLY PREVIEW**  
+> This package prints what it *would* capture/encrypt/upload, then exits.  
+> Network, crypto, and verification are intentionally unimplemented in this preview.
 
-GAP Agent is the open-source component that handles GAP shard creation, encryption, and storage management. It provides the same data path used by Shaga Node Core but as an auditable, public library.
+**Open-source client prototype for GAP data packaging, encryption, and upload**
 
 ## What's Public (This Module)
 
