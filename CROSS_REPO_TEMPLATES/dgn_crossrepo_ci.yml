@@ -1,0 +1,26 @@
+name: Cross‑repo NGC sample validation
+on:
+  schedule: [{cron: "0 6 * * 1"}]  # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  validate-ngc-samples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DGN
+        uses: actions/checkout@v4
+      - name: Checkout NGC
+        uses: actions/checkout@v4
+        with:
+          repository: ShagaDAO/ngc
+          path: ngc
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install validator deps
+        run: pip install -r tools/validator/requirements.txt
+      - name: Validate NGC samples
+        run: |
+          python3 tools/validator/cli.py check --schema dgn-semantic-update-0.1.0.json ngc/samples/dgn/semantic_update.jsonl
+          python3 tools/validator/cli.py check --schema dgn-residual-chunk-0.1.0.json ngc/samples/dgn/residual_chunk.json 

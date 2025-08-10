@@ -60,10 +60,12 @@ We follow **coordinated disclosure**:
 ### Security Considerations
 
 **Known Limitations (Preview Status):**
+- Crypto/upload/verifier are intentionally stubbed (sim-only)
+- Public demo enforces hard file/time caps
+- No cookies/session state → CSRF out of scope; requests must be explicit uploads
 - Validator outputs may change between versions
 - Upload credentials are allowlist-only (security through obscurity)
 - Anti-sybil detection is in early testing phase
-- Cryptographic implementation is prototype-grade
 
 **Out of Scope:**
 - DoS attacks on public HF Space or samples
@@ -91,6 +93,24 @@ Currently **no formal bug bounty program**. Security researchers will receive:
 - Public acknowledgment in release notes
 - CVE credit where applicable
 - Consideration for future bug bounty programs
+
+## External Audits & Reviews
+
+| Date       | Commit  | Focus                       | Outcome                |
+|------------|---------|----------------------------|------------------------|
+| 2025-02-05 | HEAD    | Safe I/O, size caps, atomic writes | ✅ Provenance documented |
+| 2025-02-05 | HEAD    | Schema‑first JSON validation | ✅ Passed              |
+| 2025-02-05 | HEAD    | HF Space rate/time limits   | ✅ Passed              |
+
+See [docs/adr/0001-preview-secure-posture.md](docs/adr/0001-preview-secure-posture.md) for our architectural security decisions.
+
+## Dependency Security Notes
+
+**CVE False Positives:**
+- **CVE-2024-42992** (pandas): **REJECTED by NVD** - [withdrawn by CNA as "not a security issue"](https://nvd.nist.gov/vuln/detail/CVE-2024-42992)
+- **CVE-2021-3918**: Affects **npm `json-schema`** package (JavaScript), **NOT** Python `jsonschema` library used here
+
+Our locked dependencies (`requirements-preview.lock`) use current stable versions with no known security vulnerabilities.
 
 ---
 

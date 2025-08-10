@@ -1,0 +1,20 @@
+# CODEOWNERS - Human Review & Accountability
+# See PROVENANCE.md for AI assistance policy
+
+# Global ownership - all changes need review
+* @chat-grp @ShagaDAO/maintainers
+
+# Security-critical paths require additional review (2 reviewers minimum)
+/tools/safe_io.py @chat-grp @ShagaDAO/maintainers
+/tools/atomic.py @chat-grp @ShagaDAO/maintainers
+/tools/json_guard.py @chat-grp @ShagaDAO/maintainers
+/.github/workflows/ @chat-grp @ShagaDAO/maintainers
+/SECURITY.md @chat-grp @ShagaDAO/maintainers
+
+# Core specifications
+/packages/gap-spec/ @chat-grp @ShagaDAO/maintainers
+/docs/ @chat-grp @ShagaDAO/maintainers
+
+# Validation and testing
+/tools/validate.py @chat-grp @ShagaDAO/maintainers
+/tests/ @chat-grp @ShagaDAO/maintainers 

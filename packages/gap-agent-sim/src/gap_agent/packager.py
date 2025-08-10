@@ -11,6 +11,13 @@ import hashlib
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 import shutil
+import sys
+import os
+
+# Add tools directory to path for safe_io import
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'tools'))
+from safe_io import safe_resolve_path, sanitize_error
+from atomic import atomic_write_text
 
 from .crypto import EncryptionManager
 
@@ -46,12 +53,9 @@ class ShardPackager:
         # Generate hashes
         hashes = self._generate_hashes([video_dest, controls_dest, output_path / "meta.json"])
         
-        # Save metadata and hashes
-        with open(output_path / "meta.json", 'w') as f:
-            json.dump(meta, f, indent=2)
-            
-        with open(output_path / "hashes.json", 'w') as f:
-            json.dump(hashes, f, indent=2)
+        # Save metadata and hashes atomically
+        atomic_write_text(output_path / "meta.json", json.dumps(meta, indent=2))
+        atomic_write_text(output_path / "hashes.json", json.dumps(hashes, indent=2))
             
         # Handle encryption if enabled
         encryption_info = None
@@ -152,7 +156,9 @@ class ShardPackager:
         else:
             controls_dest = output_path / f"controls{controls_src.suffix}"
             
-        # Copy files (TODO: add compression/processing)
+        # Copy files safely (TODO: add compression/processing)
+        video_dest = safe_resolve_path(output_path, video_dest.name)
+        controls_dest = safe_resolve_path(output_path, controls_dest.name)
         shutil.copy2(video_src, video_dest)
         shutil.copy2(controls_src, controls_dest)
         
@@ -201,7 +207,6 @@ class ShardPackager:
             "envelope_key": self.encryption_manager.get_envelope_key()
         }
         
-        with open(shard_path / "encryption.json", 'w') as f:
-            json.dump(encryption_info, f, indent=2)
+        atomic_write_text(shard_path / "encryption.json", json.dumps(encryption_info, indent=2))
             
         return encryption_info 

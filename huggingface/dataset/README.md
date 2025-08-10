@@ -109,20 +109,22 @@ All samples pass GAP v0.2 Quality Acceptance Tests:
 ### Validate GAP Shard
 ```python
 from datasets import load_dataset
-import subprocess
+from gap_tools.validate import GAPValidator
 
 # Load dataset
 dataset = load_dataset("Shaga/GAP-samples", split="train")
 sample = dataset[0]
 
-# Validate with GAP tools
-result = subprocess.run([
-    "python", "-m", "gap_tools.validate", 
-    "--profile", "wayfarer-owl",
-    sample['shard_path']
-], capture_output=True, text=True)
+# Validate with GAP tools (secure API usage)
+validator = GAPValidator(sample['shard_path'], profile="wayfarer-owl")
+is_valid, report = validator.validate_all()
 
-print(f"Validation: {'✅ PASS' if result.returncode == 0 else '❌ FAIL'}")
+print(f"Validation: {'✅ PASS' if is_valid else '❌ FAIL'}")
+```
+
+> **Security Note:** Examples using `subprocess.run()` with shell commands are for 
+> illustration only. In production code, use library APIs directly and validate 
+> all inputs to prevent command injection attacks.
 ```
 
 ### Load Control Events

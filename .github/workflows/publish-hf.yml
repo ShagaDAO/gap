@@ -13,8 +13,15 @@ on:
 jobs:
   publish-dataset:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: 'false'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONWARNINGS: 'ignore'
     
     steps:
+    - name: Mask tokens
+      run: |
+        echo "::add-mask::${{ secrets.HF_TOKEN }}"
     - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
@@ -49,6 +56,8 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
+        set -euo pipefail
+        set +x  # never echo commands with secrets
         cd hf_upload/dataset
         huggingface-cli upload Shaga/GAP-samples . --repo-type dataset
     
@@ -64,8 +73,15 @@ jobs:
   publish-space:
     runs-on: ubuntu-latest
     needs: publish-dataset
+    env:
+      ACTIONS_STEP_DEBUG: 'false'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONWARNINGS: 'ignore'
     
     steps:
+    - name: Mask tokens
+      run: |
+        echo "::add-mask::${{ secrets.HF_TOKEN }}"
     - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
@@ -82,6 +98,8 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
+        set -euo pipefail
+        set +x  # never echo commands with secrets
         huggingface-cli login --token $HF_TOKEN
     
     - name: Prepare Space files
@@ -118,8 +136,15 @@ jobs:
     
   build-gap-agent:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: 'false'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONWARNINGS: 'ignore'
     
     steps:
+    - name: Mask tokens
+      run: |
+        echo "::add-mask::${{ secrets.GITHUB_TOKEN }}"
     - uses: actions/checkout@v4
     
     - name: Set up Python 3.11

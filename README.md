@@ -4,10 +4,16 @@
 > This repo publishes the **GAP data specification** and a **reference validator**.  
 > The **gap‑agent** uploader is a **simulation‑only prototype** not suitable for production.
 > Crypto, upload, and verifier modules are **stubs** by design and will fail safely.
+> **Validators are hardened; the demo Space uses strict file/time limits.**
 
+> **Token note:** $SHAG is **not live**. Ignore any tokens claiming to be $SHAG — they are scams. We'll announce anything official here.
+
+![preview-secure](https://img.shields.io/badge/preview--secure-✅-green)
+![spec-stable](https://img.shields.io/badge/spec--stable-v0.2.0-blue)
+![agent](https://img.shields.io/badge/agent-sim--only%20(WIP)-orange)
 ![status](https://img.shields.io/badge/status-preview-yellow)
-![scope](https://img.shields.io/badge/scope-spec%20%2B%20validator-blue)
-![agent](https://img.shields.io/badge/agent-sim--only-orange)
+
+> **Security & Provenance:** Preview-secure by design with hardened validators. AI-assisted code development with human review required. See [SECURITY.md](SECURITY.md) | [PROVENANCE.md](PROVENANCE.md)
 
 **Open standard + tools for time‑aligned frames + controls.**  
 This repo contains the GAP spec, validator, and simulation-only gap‑agent prototype.
@@ -21,6 +27,21 @@ This repo contains the GAP spec, validator, and simulation-only gap‑agent prot
 
 **What's open:** spec, validator, packing/upload client, sample & Space.  
 **What's closed:** real‑time streaming, DRM, watermarking, Proof‑of‑Render.
+
+## Two‑minute tour (spec-first)
+- Validate a sample shard:
+```bash
+python3 tools/validate.py samples/star-atlas_100mb/
+```
+- Want an end‑to‑end peek? See the **NGC toy sample** that turns GAP → DGN:  
+  https://github.com/ShagaDAO/ngc/tree/main/samples/dgn
+
+### Provenance & AI assistance
+
+We use AI assistants for boilerplate and documentation; all changes are human-reviewed—details in [PROVENANCE.md](./PROVENANCE.md).
+
+> **Consistent formatting**: We use pre‑commit (Black/Ruff/Docformatter) for uniform code style.  
+> **Architecture decisions**: See [docs/adr/](docs/adr/) for our design rationale and security posture.
 
 ## Quick Start
 
@@ -109,6 +130,13 @@ GAP v0.2 supports partner-specific profiles that ensure compatibility while exte
 
 These profiles mirror OWL's public defaults for seamless integration with existing tooling.
 
+### Compatibility
+| Producer | Consumer | Status |
+|---|---|---|
+| GAP v0.2.x shard | NGC notebooks/tools (research) | ✅ supported (toy) |
+| NGC DGN‑shaped samples | DGN validator | ✅ passes schemas |
+| DGN 0.1.0 schemas | DGN validator | ✅ CI enforced |
+
 ## Key Features
 
 - **Time-aligned**: All data uses monotonic microsecond timestamps
@@ -182,6 +210,22 @@ Migration from v0.1.x: Use AV1/HEVC CFR, standardize control rates to ≥60Hz.
 - **Upload requires allowlist** credentials (invite-only)
 - **Validator outputs** may change format in future versions
 - **Anti-sybil detection** is in early testing phase
+
+### Resource Limits
+
+These caps protect reviewers and the public demo from DoS and zip-bombs. Raise them locally via environment variables if you need to validate larger bundles:
+
+- **Video files**: 512MB default (`GAP_MAX_VIDEO_BYTES` to override)
+- **Controls JSONL**: 100MB default (`GAP_MAX_JSONL_MB` to override)
+- **HF Space uploads**: 150MB/30s timeout (`GAP_SPACE_MAX_MB`/`GAP_SPACE_MAX_SECONDS`)
+- **JSONL line count**: 5M lines max (`GAP_MAX_JSONL_LINES`)
+
+## Where This Fits
+
+GAP is the spec and validator for synchronized **frames + controls**. It's used by the DGN plan (Psyche lane for interactive world‑models) and by the Shaga × Wayfarer partnership to train open Genie3‑class models on consumer GPUs. 
+
+> **Want the operational/partnership story** (Wayfarer, Psyche lane, compute subsidies)?  
+> See **ShagaDAO/dgn**. GAP stays **spec + validator** only.
 
 ## Contributing
 

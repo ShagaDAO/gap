@@ -13,6 +13,7 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Any, Tuple, Optional
 import click
+import os
 
 from loader import GAPLoader
 try:
@@ -34,6 +35,11 @@ class GAPValidator:
         self.errors = []
         self.warnings = []
         
+        # Configurable limits - safer defaults, env-tunable for power users
+        self.max_video_bytes = int(os.getenv("GAP_MAX_VIDEO_BYTES", 512 * 1024**2))  # 512MB default
+        self.max_jsonl_lines = int(os.getenv("GAP_MAX_JSONL_LINES", 5_000_000))  # 5M lines
+        self.max_jsonl_bytes = int(os.getenv("GAP_MAX_JSONL_MB", 100)) * 1024**2  # 100MB default
+        
     def error(self, msg: str):
         """Record a validation error."""
         self.errors.append(msg)
@@ -42,8 +48,15 @@ class GAPValidator:
         """Record a validation warning."""
         self.warnings.append(msg)
         
+    def _check_file_size(self, file_path: Path, max_bytes: int) -> None:
+        """Check if file exceeds size limit."""
+        if file_path.exists() and file_path.stat().st_size > max_bytes:
+            size_mb = file_path.stat().st_size / (1024 * 1024)
+            max_mb = max_bytes / (1024 * 1024)
+            raise ValueError(f"{file_path.name} too large: {size_mb:.1f}MB > {max_mb:.1f}MB")
+    
     def validate_file_structure(self) -> bool:
-        """Validate required files are present."""
+        """Validate required files are present and within size limits."""
         required_files = ["meta.json", "hashes.json"]
         required_video = ["video.ivf", "video.mkv"]
         required_controls = ["controls.parquet"]
@@ -58,12 +71,19 @@ class GAPValidator:
             if not (self.shard_path / file).exists():
                 self.error(f"Required file missing: {file}")
                 
-        # Check video file (one of the formats)
+        # Check video file (one of the formats) and size
         video_files = [f for f in required_video if (self.shard_path / f).exists()]
         if not video_files:
             self.error(f"No video file found. Expected one of: {required_video}")
         elif len(video_files) > 1:
             self.warning(f"Multiple video files found: {video_files}")
+        else:
+            # Check video file size
+            video_path = self.shard_path / video_files[0]
+            try:
+                self._check_file_size(video_path, self.max_video_bytes)
+            except ValueError as e:
+                self.error(str(e))
             
         # Check controls file
         controls_found = False
@@ -158,11 +178,19 @@ class GAPValidator:
                 return False
         elif controls_jsonl.exists():
             try:
-                # Load JSONL format (for OWL profile)
+                # Check JSONL file size and line count
+                self._check_file_size(controls_jsonl, self.max_jsonl_bytes)
+                
+                # Load JSONL format with line limit (for OWL profile)
                 controls_data = []
+                line_count = 0
                 with open(controls_jsonl, 'r') as f:
                     for line in f:
-                        controls_data.append(json.loads(line.strip()))
+                        line_count += 1
+                        if line_count > self.max_jsonl_lines:
+                            raise ValueError(f"controls.jsonl exceeds {self.max_jsonl_lines} lines")
+                        if line.strip():  # Skip empty lines
+                            controls_data.append(json.loads(line.strip()))
                 controls = pd.DataFrame(controls_data)
                 
                 # Validate JSONL-specific fields

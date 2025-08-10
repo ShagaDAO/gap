@@ -12,6 +12,12 @@
 | **Verifier**             | Integrity checks            | 🔴 **Stub**       | Planned for production release |
 | **S3/HTTP upload**       | Transport                   | 🔴 **Stub**       | Planned for production release |
 | **Security contact**     | Vulnerability intake        | ✅ **Added**      | See SECURITY.md |
+| **Security hardening**   | Path/archive safety         | ✅ **Implemented** | Safe I/O, limits, BLAKE3 hashing |
+| **Security headers**     | Space web protection        | ✅ **Added**      | CSP, frame options, no-sniff |
+| **Atomic writes**        | File integrity              | ✅ **Implemented** | Prevents partial/corrupt outputs |
+| **Schema-first JSON**    | Input validation            | ✅ **Added**      | json_guard module |
+| **Constraints in CI**    | Dependency freezing         | ✅ **Added**      | requirements-preview.lock |
+| **Archive fuzz test**    | Path traversal guard        | ✅ **Added**      | Property-based testing |
 
 ## What Works Today
 

@@ -12,6 +12,8 @@ import urllib.parse
 from pathlib import Path
 from typing import Optional
 
+from .safe_io import TempDir, safe_extract_zip, safe_extract_tar, sanitize_error
+
 
 class URILoader:
     """Loads GAP shards from various URI schemes."""
@@ -73,37 +75,35 @@ class URILoader:
             # Create S3 client (assumes credentials are configured)
             s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
             
-            # Download to temporary directory
-            temp_dir = tempfile.mkdtemp()
-            local_path = Path(temp_dir) / Path(key).name
-            
-            s3_client.download_file(bucket, key, str(local_path))
-            
-            # If it's an archive, extract it
-            if local_path.suffix.lower() in ['.tar', '.tar.gz', '.zip']:
-                extract_dir = local_path.parent / local_path.stem
+            # Download to temporary directory with safe cleanup
+            with TempDir() as temp_dir:
+                local_path = temp_dir / Path(key).name
                 
-                if local_path.suffix.lower() == '.zip':
-                    import zipfile
-                    with zipfile.ZipFile(local_path, 'r') as zip_ref:
-                        zip_ref.extractall(extract_dir)
-                else:
-                    import tarfile
-                    with tarfile.open(local_path, 'r:*') as tar_ref:
-                        tar_ref.extractall(extract_dir)
-                        
-                # Find GAP shard directory
-                for subdir in extract_dir.rglob('meta.json'):
-                    return str(subdir.parent)
+                s3_client.download_file(bucket, key, str(local_path))
+                
+                # If it's an archive, extract it safely
+                if local_path.suffix.lower() in ['.tar', '.tar.gz', '.tgz', '.zip']:
+                    extract_dir = temp_dir / local_path.stem
                     
-                return str(extract_dir)
-            else:
-                return str(local_path.parent)
+                    if local_path.suffix.lower() == '.zip':
+                        safe_extract_zip(local_path, extract_dir)
+                    elif local_path.suffix.lower() in ['.tar', '.tar.gz', '.tgz']:
+                        safe_extract_tar(local_path, extract_dir)
+                    else:
+                        raise ValueError("unsupported archive type")
+                            
+                    # Find GAP shard directory
+                    for subdir in extract_dir.rglob('meta.json'):
+                        return str(subdir.parent)
+                        
+                    return str(extract_dir)
+                else:
+                    return str(local_path.parent)
                 
         except ImportError:
             raise ValueError("boto3 library not installed")
         except Exception as e:
-            raise ValueError(f"Failed to load from S3: {e}")
+            raise ValueError(sanitize_error(e, key))
 
 
 def is_uri(path: str) -> bool:

@@ -1,0 +1,19 @@
+{
+  "chunk_id": "residual_001",
+  "frame_range": [1001, 1003],
+  "timestamp_range_ms": [16667, 50001],
+  "compression": {
+    "method": "neural_residual_v1",
+    "quality": 0.85,
+    "bitrate_kbps": 1200
+  },
+  "residual_data": {
+    "format": "base64_encoded_tensor",
+    "dimensions": [3, 1080, 1920],
+    "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  },
+  "validation": {
+    "checksum": "sha256:a1b2c3d4e5f6789012345678901234567890abcdef",
+    "chunk_size_bytes": 4096
+  }
+} 

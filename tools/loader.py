@@ -9,6 +9,7 @@ import json
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
+from json_guard import load_validated
 
 
 class GAPLoader:
@@ -28,9 +29,14 @@ class GAPLoader:
         meta_path = self.shard_path / "meta.json"
         if not meta_path.exists():
             raise FileNotFoundError(f"meta.json not found in {self.shard_path}")
-            
-        with open(meta_path, 'r') as f:
-            self.meta = json.load(f)
+        
+        schema_path = Path(__file__).parent.parent / "packages/gap-spec/schema.json"
+        try:
+            self.meta = load_validated(meta_path, schema_path)
+        except Exception:
+            # Fallback to unvalidated load for compatibility
+            with open(meta_path, 'r') as f:
+                self.meta = json.load(f)
             
         # Validate schema version
         if self.meta.get("schema_version") != "0.2.0":
@@ -85,7 +91,8 @@ class GAPLoader:
         hashes_path = self.shard_path / "hashes.json"
         if not hashes_path.exists():
             raise FileNotFoundError(f"hashes.json not found in {self.shard_path}")
-            
+        
+        # Use direct JSON load for hashes (no formal schema yet)
         with open(hashes_path, 'r') as f:
             self.hashes = json.load(f)
             

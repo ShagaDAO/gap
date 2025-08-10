@@ -9,8 +9,23 @@ import json
 import tempfile
 import zipfile
 import tarfile
+import time
+import os
+import asyncio
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
+
+# Add tools directory to path for safe_io import  
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'tools'))
+from safe_io import TempDir, safe_extract_zip, safe_extract_tar, sanitize_error
+
+# Resource limits - safer defaults for public demo
+MAX_UPLOAD_MB = int(os.getenv("GAP_SPACE_MAX_MB", "150"))
+MAX_PROCESSING_SECONDS = int(os.getenv("GAP_SPACE_MAX_SECONDS", "30"))
+
+# Concurrency guard (explicit rate limiting)
+processing_semaphore = asyncio.Semaphore(2)
 
 # Mock GAP validator (in real deployment, this would import actual tools)
 class MockGAPValidator:
@@ -51,19 +66,34 @@ class MockGAPValidator:
         return report["valid"], report
 
 
+def _check_upload_size(file_obj) -> None:
+    """Check if uploaded file exceeds size limit."""
+    if hasattr(file_obj, 'size') and file_obj.size:
+        size_mb = file_obj.size / (1024 * 1024)
+    else:
+        # Fallback: seek to end to get size
+        file_obj.seek(0, 2)
+        size_mb = file_obj.tell() / (1024 * 1024)
+        file_obj.seek(0)
+    
+    if size_mb > MAX_UPLOAD_MB:
+        raise ValueError(f"File too large: {size_mb:.1f}MB > {MAX_UPLOAD_MB}MB")
+
 def extract_uploaded_file(file_path: str, extract_dir: str) -> Optional[str]:
-    """Extract uploaded archive and return shard directory."""
+    """Extract uploaded archive safely and return shard directory."""
     
     extract_path = Path(extract_dir)
     file_path_obj = Path(file_path)
     
     try:
-        if file_path_obj.suffix.lower() in ['.zip']:
-            with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                zip_ref.extractall(extract_path)
+        # Check file size
+        with open(file_path, 'rb') as f:
+            _check_upload_size(f)
+        
+        if file_path_obj.suffix.lower() == '.zip':
+            safe_extract_zip(file_path_obj, extract_path)
         elif file_path_obj.suffix.lower() in ['.tar', '.tar.gz', '.tgz']:
-            with tarfile.open(file_path, 'r:*') as tar_ref:
-                tar_ref.extractall(extract_path)
+            safe_extract_tar(file_path_obj, extract_path)
         else:
             # Assume it's a directory structure
             return file_path
@@ -75,16 +105,24 @@ def extract_uploaded_file(file_path: str, extract_dir: str) -> Optional[str]:
         return None
         
     except Exception as e:
-        return f"Extraction failed: {e}"
+        return sanitize_error(e, file_path)
 
 
-def validate_gap_shard(file, profile: str, strict: bool) -> Tuple[str, str, str]:
-    """Validate uploaded GAP shard and return results."""
+async def validate_gap_shard_async(file, profile: str, strict: bool) -> Tuple[str, str, str]:
+    """Validate uploaded GAP shard with concurrency control."""
     
     if file is None:
         return "❌ No file uploaded", "", ""
-        
-    with tempfile.TemporaryDirectory() as temp_dir:
+    
+    async with processing_semaphore:
+        return _validate_gap_shard_sync(file, profile, strict)
+
+def _validate_gap_shard_sync(file, profile: str, strict: bool) -> Tuple[str, str, str]:
+    """Internal synchronous validation logic."""
+    start_time = time.time()
+    
+    try:
+        with TempDir() as temp_dir:
         # Extract file
         shard_path = extract_uploaded_file(file.name, temp_dir)
         
@@ -105,6 +143,10 @@ def validate_gap_shard(file, profile: str, strict: bool) -> Tuple[str, str, str]
         except Exception as e:
             return f"❌ Failed to read metadata: {e}", "", ""
             
+        # Check processing time limit
+        if time.time() - start_time > MAX_PROCESSING_SECONDS:
+            return "❌ Processing timeout exceeded", "", ""
+        
         # Run validation
         validator = MockGAPValidator(profile if profile != "none" else None, strict)
         is_valid, report = validator.validate_all()
@@ -157,6 +199,18 @@ def validate_gap_shard(file, profile: str, strict: bool) -> Tuple[str, str, str]
         json_report = json.dumps(report, indent=2)
         
         return status_details, details, json_report
+    
+    except Exception as e:
+        return f"❌ Processing error: {e.__class__.__name__}", "", ""
+
+def validate_gap_shard(file, profile: str, strict: bool) -> Tuple[str, str, str]:
+    """Wrapper to run async validation in sync context."""
+    try:
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(validate_gap_shard_async(file, profile, strict))
+    except RuntimeError:
+        # If no loop is running, create a new one
+        return asyncio.run(validate_gap_shard_async(file, profile, strict))
 
 
 def show_sample_data() -> str:
@@ -213,7 +267,7 @@ gap pack video.mkv controls.jsonl --output my_shard/
 """
 
 
-# Create Gradio interface
+# Create Gradio interface with concurrency limits
 with gr.Blocks(title="GAP Explorer", theme=gr.themes.Soft()) as demo:
     
     gr.Markdown("""
@@ -302,4 +356,15 @@ with gr.Blocks(title="GAP Explorer", theme=gr.themes.Soft()) as demo:
 
 
 if __name__ == "__main__":
-    demo.launch() 
+    # Launch with limited concurrency and security headers
+    demo.launch(
+        max_threads=2,
+        # Add security headers via Gradio's built-in middleware
+        additional_headers={
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY", 
+            "Referrer-Policy": "no-referrer",
+            "Permissions-Policy": "camera=(), microphone=()",
+            "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+        }
+    ) 

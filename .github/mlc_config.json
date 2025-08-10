@@ -1,0 +1,18 @@
+{
+  "aliveStatusCodes": [200, 206, 999],
+  "ignorePatterns": [
+    {
+      "pattern": "^https://github.com/.*/commit/"
+    },
+    {
+      "pattern": "^https://forms.gle/"
+    },
+    {
+      "pattern": "^mailto:"
+    }
+  ],
+  "timeout": "10s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "2s"
+} 

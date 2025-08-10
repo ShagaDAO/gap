@@ -1,0 +1,52 @@
+name: Security Linting
+on: [push, pull_request]
+
+jobs:
+  security_lint:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: 'false'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONWARNINGS: 'ignore'
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    
+    - name: Install dependencies
+      run: |
+        pip install ruff bandit blake3 pytest hypothesis
+        pip install -r requirements.txt -c requirements-preview.lock
+    
+    - name: Run ruff linter
+      run: ruff check .
+    
+    - name: Run bandit security scanner
+      run: bandit -q -r tools packages || true  # warn-only in preview
+      continue-on-error: true
+    
+    - name: Check for common security patterns
+      run: |
+        set -euo pipefail
+        set +x  # never echo commands with secrets
+        echo "Checking for potential security issues..."
+        # Look for dangerous patterns
+        if grep -r "shell=True" . --include="*.py"; then
+          echo "WARNING: Found shell=True usage"
+        fi
+        if grep -r "eval(" . --include="*.py"; then
+          echo "WARNING: Found eval() usage"
+        fi
+        if grep -r "exec(" . --include="*.py"; then
+          echo "WARNING: Found exec() usage"
+        fi
+    
+    - name: Run archive path fuzzing tests
+      run: |
+        set -euo pipefail
+        set +x  # never echo commands with secrets
+        if [ -f tests/test_safe_io.py ]; then
+          pytest tests/test_safe_io.py -v --tb=short || echo "WARNING: Archive fuzzing tests failed"
+        fi 

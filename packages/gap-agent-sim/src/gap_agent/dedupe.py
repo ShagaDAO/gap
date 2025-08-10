@@ -13,6 +13,12 @@ from typing import List, Dict, Any, Tuple, Optional
 import math
 
 try:
+    import blake3
+    HAS_BLAKE3 = True
+except ImportError:
+    HAS_BLAKE3 = False
+
+try:
     import cv2
     import numpy as np
     HAS_CV2 = True
@@ -222,9 +228,13 @@ def simhash(features: List[str], hash_bits: int = 64) -> int:
     bit_vector = [0] * hash_bits
     
     for feature in features:
-        # Hash the feature
-        feature_hash = hashlib.md5(feature.encode()).hexdigest()
-        feature_int = int(feature_hash, 16)
+        # Hash the feature with BLAKE3 for better collision resistance
+        if HAS_BLAKE3:
+            feature_hash = blake3.blake3(feature.encode()).hexdigest()
+        else:
+            # Fallback to SHA-256 if BLAKE3 not available
+            feature_hash = hashlib.sha256(feature.encode()).hexdigest()
+        feature_int = int(feature_hash[:16], 16)  # Use first 64 bits
         
         # Add/subtract from bit vector based on hash bits
         for i in range(hash_bits):

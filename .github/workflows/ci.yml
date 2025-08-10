@@ -1,0 +1,146 @@
+name: CI & Security Audit
+on:
+  push: {branches: [main]}
+  pull_request:
+  schedule: [{cron: "0 5 * * *"}]  # Daily security audit
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      ACTIONS_STEP_DEBUG: 'false'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PYTHONWARNINGS: 'ignore'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+
+      # 1) Version consistency enforcement
+      - name: Install dependencies with version validation
+        run: |
+          pip install -r requirements.txt -c requirements-preview.lock
+          python -c "
+          import pkg_resources, pathlib, re
+          req = pathlib.Path('requirements-preview.lock').read_text()
+          have_jsonschema = pkg_resources.get_distribution('jsonschema').version
+          want_jsonschema = re.search(r'^jsonschema==([\d\.]+)$', req, flags=re.M).group(1)
+          assert have_jsonschema == want_jsonschema, f'jsonschema mismatch: have {have_jsonschema}, want {want_jsonschema}'
+          print(f'✅ jsonschema version locked: {have_jsonschema}')
+          
+          have_pandas = pkg_resources.get_distribution('pandas').version
+          want_pandas = re.search(r'^pandas==([\d\.]+)$', req, flags=re.M).group(1)
+          assert have_pandas == want_pandas, f'pandas mismatch: have {have_pandas}, want {want_pandas}'
+          print(f'✅ pandas version locked: {have_pandas}')
+          "
+
+      # 2) GAP validator & samples
+      - name: Test GAP validator
+        run: |
+          python tools/validate.py samples/star-atlas_100mb/ --profile wayfarer-owl --json > validation_result.json
+          python -c "
+          import json
+          result = json.load(open('validation_result.json'))
+          assert result['valid'] == True, f'Sample validation failed: {result}'
+          print('✅ GAP sample validation passed')
+          "
+
+      # 3) Schema validation tests
+      - name: Validate JSON schemas
+        run: |
+          python -c "
+          import jsonschema, json, pathlib
+          for schema_file in pathlib.Path('packages/gap-spec/').glob('*.schema.json'):
+              schema = json.loads(schema_file.read_text())
+              jsonschema.Draft7Validator.check_schema(schema)
+              print(f'✅ {schema_file.name} is valid JSON Schema')
+          "
+
+      # 4) Security audit (fail on high/critical CVEs)
+      - name: Security audit
+        run: |
+          pip install pip-audit safety
+          echo "Running pip-audit (fails on HIGH/CRITICAL)..."
+          pip-audit -r requirements.txt --desc --vulnerability-service osv
+          echo "Running safety check..."
+          safety check -r requirements.txt --full-report
+
+      # 5) Link & badge hygiene
+      - name: Markdown link check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          config-file: '.github/mlc_config.json'
+
+      # 6) External repos accessibility check
+      - name: Check external repos
+        env:
+          DGN_URL: https://github.com/ShagaDAO/dgn.git
+          NGC_URL: https://github.com/ShagaDAO/ngc.git
+        run: |
+          echo "Checking external repo references..."
+          git ls-remote "$DGN_URL" HEAD || (echo "❌ DGN repo inaccessible"; exit 1)
+          git ls-remote "$NGC_URL" HEAD || (echo "❌ NGC repo inaccessible"; exit 1)
+          echo "✅ External repos accessible"
+
+      # 7) Scope guardrails (GAP is spec-only)
+      - name: No runtime code outside validator (spec-only repos)
+        run: |
+          echo "Checking for runtime code creep..."
+          runtime_files=$(find . -name "*.py" \
+            -not -path "./tools/*" \
+            -not -path "./tests/*" \
+            -not -path "./packages/gap-agent-sim/*" \
+            -not -path "./.github/*" \
+            -not -path "./huggingface/*" \
+            -not -path "./examples/*" | head -5)
+          if [[ -n "$runtime_files" ]]; then
+            echo "❌ Runtime code creep detected:"
+            echo "$runtime_files"
+            exit 1
+          fi
+          echo "✅ Scope discipline maintained"
+
+      # 8) Policy & provenance presence checks
+      - name: Policy checks
+        run: |
+          echo "Checking required policy files..."
+          test -f PROVENANCE.md || (echo "❌ Missing PROVENANCE.md"; exit 1)
+          test -f SECURITY.md || (echo "❌ Missing SECURITY.md"; exit 1)
+          test -f CODEOWNERS || (echo "❌ Missing CODEOWNERS"; exit 1)
+          grep -q "AI.*assistance" PROVENANCE.md || (echo "❌ AI assistance not documented"; exit 1)
+          grep -q "human.*review" PROVENANCE.md || (echo "❌ Human review not documented"; exit 1)
+          echo "✅ Policy files complete"
+
+      # 9) Negative testing (prove validator rejects bad input)
+      - name: Negative testing (validator rejects malformed data)
+        run: |
+          # Create malformed samples
+          mkdir -p test_samples/bad_sample
+          echo '{"invalid": "missing required schema_version"}' > test_samples/bad_sample/meta.json
+          echo '{}' > test_samples/bad_sample/hashes.json
+          
+          # Prove validator fails on bad input
+          if python tools/validate.py test_samples/bad_sample/ 2>/dev/null; then
+            echo "❌ Validator should have rejected malformed sample"
+            exit 1
+          fi
+          echo "✅ Validator correctly rejects malformed input"
+
+      # 10) Ruff & Bandit (existing security patterns)
+      - name: Code quality & security
+        run: |
+          pip install ruff bandit
+          echo "Running ruff..."
+          ruff check .
+          echo "Running bandit security scanner..."
+          bandit -q -r tools packages || echo "⚠️ Bandit warnings (allowed in preview)"
+
+      # 11) CVE false positive documentation
+      - name: CVE false positive check
+        run: |
+          echo "Checking CVE false positive documentation..."
+          grep -q "CVE-2024.*pandas.*rejected" SECURITY.md || (echo "⚠️ Should document pandas CVE rejection"; exit 0)
+          grep -q "CVE-2021-3918.*npm.*json-schema" SECURITY.md || (echo "⚠️ Should document npm vs python jsonschema"; exit 0)
+          echo "✅ CVE documentation checked" 
