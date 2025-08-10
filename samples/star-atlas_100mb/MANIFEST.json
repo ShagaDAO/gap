@@ -1,0 +1,36 @@
+{
+  "manifest_version": "1.0",
+  "gap_version": "0.2.1",
+  "description": "GAP v0.2 Reference Shard - Star Atlas 100MB Sample",
+  "video": {
+    "filename": "video.ivf",
+    "download_url": "https://github.com/your-org/gap/releases/download/v0.2.2/star-atlas-100mb-video.ivf",
+    "size_bytes": 105906176,
+    "size_mb": 101.0,
+    "duration_sec": 180,
+    "codec": "AV1",
+    "resolution": "1920x1080",
+    "fps": 60,
+    "bitrate_mbps": 4.5,
+    "sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+  },
+  "sample_info": {
+    "profile": "wayfarer-owl.v0.1",
+    "game": "Star Atlas",
+    "capture_date": "2024-01-15",
+    "license": "research-use-only",
+    "rights_clean": true,
+    "watermarked": true
+  },
+  "usage": {
+    "validate": "python3 ../../tools/validate.py --profile wayfarer-owl .",
+    "load": "python3 ../../tools/loader.py .",
+    "download_script": "./download.sh"
+  },
+  "notes": [
+    "Video file not included in git repository due to size",
+    "Run download.sh to fetch complete sample",
+    "SHA256 verification included in download process",
+    "This is a reference implementation for testing and integration"
+  ]
+} 

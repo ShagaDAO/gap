@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.2.0",
+  "profile": "wayfarer-owl.v0.1",
+  "session_id": "3f8d9e12-4a7b-4c1d-8e90-1a2b3c4d5e6f",
+  "tool": {"name": "owl-control", "version": "1.2.3"},
+  "title": {"name": "Star Atlas", "build": "1.24.3", "map": "SOG_Corvus"},
+  "capture": {
+    "host_os": "Windows 11",
+    "gpu": "RTX 4090",
+    "driver": "552.44",
+    "encoder": "AV1_SVT",
+    "clock": "monotonic_us"
+  },
+  "display": {
+    "resolution": "1920x1080",
+    "fps": 60,
+    "hdr": false,
+    "colorspace": "sRGB",
+    "bit_depth": 8
+  },
+  "video": {
+    "codec": "AV1",
+    "bitrate_mbps": 4.5,
+    "cfr_enforced": true,
+    "duration_sec": 180,
+    "file_size_mb": 101.25
+  },
+  "controls": {
+    "devices": ["kbm"],
+    "format": "jsonl_events",
+    "timestamp_clock": "monotonic_us",
+    "sample_rate_hz": 120
+  },
+  "audio": {"present": false},
+  "privacy": {
+    "mic_recorded": false,
+    "overlays": false,
+    "single_player_only": true,
+    "consent": "on-file"
+  },
+  "timing": {"t0_us": 1722900000000, "timezone": "UTC"},
+  "geo": {"h3": "8a2a1072b59ffff"},
+  "rights": {"publisher_license": "ref#research-use-permitted", "player_consent_id": "ref#reference-impl-001"}
+} 

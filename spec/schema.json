@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://gap-spec.org/v0.2.0/meta.schema.json",
+  "title": "GAP v0.2 Meta Schema",
+  "description": "JSON schema for GAP (Gameplay-Action Pairs) v0.2 meta.json files",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "title",
+    "capture", 
+    "display",
+    "timing",
+    "privacy",
+    "rights"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.2.0",
+      "description": "GAP schema version"
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "UUID v4 session identifier"
+    },
+    "title": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Game title name"
+        },
+        "build": {
+          "type": "string", 
+          "description": "Game build version"
+        },
+        "map": {
+          "type": "string",
+          "description": "Map or level identifier"
+        }
+      },
+      "additionalProperties": false
+    },
+    "capture": {
+      "type": "object",
+      "required": ["host_os", "clock"],
+      "properties": {
+        "host_os": {
+          "type": "string",
+          "description": "Host operating system"
+        },
+        "gpu": {
+          "type": "string",
+          "description": "GPU model"
+        },
+        "driver": {
+          "type": "string",
+          "description": "GPU driver version"
+        },
+        "encoder": {
+          "type": "string",
+          "enum": ["AV1_SVT", "AV1_x264", "HEVC_x265", "HEVC_NVENC", "HEVC_QSV"],
+          "description": "Video encoder used"
+        },
+        "clock": {
+          "type": "string",
+          "enum": ["monotonic_us", "realtime_us"],
+          "description": "Clock source for timestamps"
+        }
+      },
+      "additionalProperties": false
+    },
+    "display": {
+      "type": "object",
+      "required": ["resolution", "fps"],
+      "properties": {
+        "resolution": {
+          "type": "string",
+          "pattern": "^[0-9]+x[0-9]+$",
+          "description": "Display resolution (e.g., 1280x720)"
+        },
+        "fps": {
+          "type": "integer",
+          "enum": [30, 60, 120],
+          "description": "Frames per second"
+        },
+        "hdr": {
+          "type": "boolean",
+          "description": "HDR capture enabled"
+        }
+      },
+      "additionalProperties": false
+    },
+    "timing": {
+      "type": "object",
+      "required": ["t0_us"],
+      "properties": {
+        "t0_us": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Session start time in microseconds"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone for session timing"
+        }
+      },
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["consent"],
+      "properties": {
+        "voice_raw": {
+          "type": "boolean",
+          "description": "Raw voice data included"
+        },
+        "chat_raw": {
+          "type": "boolean", 
+          "description": "Raw chat data included"
+        },
+        "labels_only": {
+          "type": "boolean",
+          "description": "Only aggregated labels included"
+        },
+        "consent": {
+          "type": "string",
+          "description": "Consent status reference"
+        }
+      },
+      "additionalProperties": false
+    },
+    "geo": {
+      "type": "object",
+      "properties": {
+        "h3": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{15}$",
+          "description": "H3 geohash for general location"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rights": {
+      "type": "object",
+      "required": ["publisher_license", "player_consent_id"],
+      "properties": {
+        "publisher_license": {
+          "type": "string",
+          "description": "Publisher license reference"
+        },
+        "player_consent_id": {
+          "type": "string",
+          "description": "Player consent identifier"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+} 

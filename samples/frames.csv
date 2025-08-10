@@ -1,0 +1,6 @@
+ts_ms,player_id,keymask,frame_uri,width,height,codec,crc32
+1717094400123,42,5,s3://gap-samples/f_000001.ivf,1280,720,av1,0x8f3d1ab2
+1717094400139,42,0,s3://gap-samples/f_000002.ivf,1280,720,av1,0xdd2b98c4
+1717094400156,42,0,s3://gap-samples/f_000003.ivf,1280,720,av1,0xa3b62e77
+1717094400173,42,1,s3://gap-samples/f_000004.ivf,1280,720,av1,0x5e901c09
+1717094400189,42,0,s3://gap-samples/f_000005.ivf,1280,720,av1,0x61e4f3aa 

@@ -1,0 +1,19 @@
+{
+  "sha256": {
+    "video.ivf": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "controls.jsonl": "b2c3d4e5f67890123456789012345678901abcdef234567890abcdef1234567",
+    "meta.json": "c3d4e5f6789012345678901234567890abcdef34567890abcdef12345678901"
+  },
+  "frame_watermark_sample": [
+    {"frame_idx": 60, "proof": "wm_proof_001_reference"},
+    {"frame_idx": 120, "proof": "wm_proof_002_reference"},
+    {"frame_idx": 1800, "proof": "wm_proof_003_reference"}
+  ],
+  "validation_info": {
+    "total_size_mb": 101.25,
+    "video_size_mb": 101.0,
+    "controls_size_kb": 245,
+    "meta_size_kb": 2.1,
+    "created_for": "reference_implementation"
+  }
+} 
